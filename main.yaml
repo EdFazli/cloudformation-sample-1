@@ -17,6 +17,7 @@ Parameters:
     Default: '10.0.10.0/25'
 
 Resources:
+  # VPC DR Creation
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -111,3 +112,31 @@ Resources:
       RouteTableId: !Ref PrivateRouteTable
       DestinationCidrBlock: '0.0.0.0/0'
       GatewayId: !Ref NatGateway
+  
+  # VPC Flow Logs Creation
+  VPCFlowLogsToS3:
+    Type: AWS::EC2::FlowLog
+    DependsOn: !Ref VPCFlowLogsBucket
+    Properties: 
+      ResourceId: !Ref VPC
+      ResourceType: Vpc
+      TrafficType: ALL
+      LogDestination: !GetAtt VPCFlowLogsBucket.Arn
+      LogDestinationType: s3
+      LogFormat: ${version} ${vpc-id} ${subnet-id} ${instance-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr}
+      MaxAggregationInterval: 60
+      DestinationOptions:
+        FileFormat: parquet
+        HiveCompatiblePartitions: true
+        PerHourPartition: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-VPC-DR-Flowlogs'
+  
+  # VPC Flow Logs S3 Bucket Creation
+  VPCFlowLogsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-VPC-DR-Flowlogs'
+      AccessControl: LogDeliveryWrite
+      
