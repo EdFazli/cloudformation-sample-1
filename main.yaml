@@ -7,6 +7,14 @@ Parameters:
     Description: 'State your VPC DR CIDR block'
     Type: String
     Default: '10.0.0.0/16'
+  PublicSubnetACidrBlock:
+    Description: 'State your Public Subnet A CIDR block'
+    Type: String
+    Default: '10.0.0.0/25'
+  PrivateSubnetACidrBlock:
+    Description: 'State your Private Subnet A CIDR block'
+    Type: String
+    Default: '10.0.10.0/25'
 
 Resources:
   VPC:
@@ -25,8 +33,28 @@ Resources:
       Tags:
       - Key: Name
         Value: !Sub '${AWS::StackName}-VPC-DR-IGW'
-  VPCGatewayAttachment:
+  IGWAttachment:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
+  PublicSubnetA:
+    DependsOn: VPCCidrBlock
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: 'ap-southeast-2a'
+      CidrBlock: !Sub '${PublicSubnetACidrBlock}'
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub '${AWS::StackName}-VPC-DR-Public-Subnet-A'
+  PrivateSubnetA:
+    DependsOn: VPCCidrBlock
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: 'ap-southeast-2a'
+      CidrBlock: !Sub '${PrivateSubnetACidrBlock}'
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub '${AWS::StackName}-VPC-DR-Private-Subnet-A'
