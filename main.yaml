@@ -142,11 +142,32 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-VPC-DR-Flowlogs'
   
-  # VPC Flow Logs S3 Bucket Creation
+  # S3 Bucket Creation
   VPCFlowLogsBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: 'vpc-dr-flowlogs'
       AccessControl: LogDeliveryWrite
   
+  # EBS Volume Creation
+  
   # EC2 Instance Creation
+  Server1Instance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      AvailabilityZone: 'ap-southeast-2a'
+      BlockDeviceMappings: 
+        - BlockDeviceMapping
+      IamInstanceProfile: String
+      ImageId: String
+      InstanceType: String
+      KeyName: String
+      PropagateTagsToVolumeOnCreation: True
+      SecurityGroupIds: 
+        - String
+      SubnetId: String
+      Tags: 
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-VPC-DR-Server1'
+      Volumes: 
+        - Volume
