@@ -34,13 +34,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Sub '${AWS::StackName}-VPC-DR-IGW'
-  NGWEIP:
-    Type: 'AWS::EC2::EIP'
-    Properties:
-      Domain: vpc
-      Tags:
-      - Key: Name
-        Value: !Sub '${AWS::StackName}-VPC-DR-NGW-EIP'
   NatGateway:
     Type: 'AWS::EC2::NatGateway'
     DependsOn: !Ref NGWEIP
@@ -113,6 +106,22 @@ Resources:
       DestinationCidrBlock: '0.0.0.0/0'
       GatewayId: !Ref NatGateway
   
+  # EIP Creation
+  NGWEIP:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+      Tags:
+      - Key: Name
+        Value: !Sub '${AWS::StackName}-VPC-DR-NGW-EIP'
+  Server1EIP:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+      Tags:
+      - Key: Name
+        Value: !Sub '${AWS::StackName}-VPC-DR-Server1-EIP'
+  
   # VPC Flow Logs Creation
   VPCFlowLogsToS3:
     Type: AWS::EC2::FlowLog
@@ -139,4 +148,5 @@ Resources:
     Properties:
       BucketName: 'vpc-dr-flowlogs'
       AccessControl: LogDeliveryWrite
-      
+  
+  # EC2 Instance Creation
