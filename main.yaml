@@ -137,6 +137,6 @@ Resources:
   VPCFlowLogsBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Sub '${AWS::StackName}-VPC-DR-Flowlogs'
+      BucketName: 'vpc-dr-flowlogs'
       AccessControl: LogDeliveryWrite
       
