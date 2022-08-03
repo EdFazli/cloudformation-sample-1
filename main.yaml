@@ -150,7 +150,17 @@ Resources:
       AccessControl: LogDeliveryWrite
   
   # EBS Volume Creation
-  
+
+  # EC2 Keypair Creation
+  Server1Keypair:
+    Type: AWS::EC2::KeyPair
+    Properties: 
+      KeyName: !Sub '${AWS::StackName}-VPC-DR-Server1-Keypair'
+      KeyType: rsa
+      Tags: 
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-VPC-DR-Server1-Keypair'
+
   # EC2 Instance Creation
   Server1Instance:
     Type: AWS::EC2::Instance
@@ -161,7 +171,7 @@ Resources:
       IamInstanceProfile: String
       ImageId: String
       InstanceType: String
-      KeyName: String
+      KeyName: !Ref Server1Keypair
       PropagateTagsToVolumeOnCreation: True
       SecurityGroupIds: 
         - String
