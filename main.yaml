@@ -15,6 +15,10 @@ Parameters:
     Description: 'State your Private Subnet A CIDR block'
     Type: String
     Default: '10.0.10.0/25'
+  Server1SnapshotID:
+    Description: 'State your latest snapshot ID in SG Region'
+    Type: String
+    Default: ' '
 
 Resources:
   # VPC DR Creation
@@ -114,13 +118,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Sub '${AWS::StackName}-VPC-DR-NGW-EIP'
-  Server1EIP:
-    Type: 'AWS::EC2::EIP'
-    Properties:
-      Domain: vpc
-      Tags:
-      - Key: Name
-        Value: !Sub '${AWS::StackName}-VPC-DR-Server1-EIP'
   
   # VPC Flow Logs Creation
   VPCFlowLogsToS3:
@@ -167,17 +164,20 @@ Resources:
     Properties: 
       AvailabilityZone: 'ap-southeast-2a'
       BlockDeviceMappings: 
-        - BlockDeviceMapping
+        - DeviceName: '/dev/sda'
+          Ebs:
+            SnapshotId: !Sub '${Server1SnapshotID}'
+            Encrypted: True
+            VolumeType: 'gp3'
+            VolumeSize: 16
       IamInstanceProfile: String
       ImageId: String
-      InstanceType: String
+      InstanceType: 't3.micro'
       KeyName: !Ref Server1Keypair
       PropagateTagsToVolumeOnCreation: True
       SecurityGroupIds: 
         - String
-      SubnetId: String
+      SubnetId: !Ref PrivateSubnetA
       Tags: 
         - Key: Name
           Value: !Sub '${AWS::StackName}-VPC-DR-Server1'
-      Volumes: 
-        - Volume
