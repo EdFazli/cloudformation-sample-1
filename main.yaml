@@ -172,7 +172,7 @@ Resources:
   
   #----------EBS Volume Creation----------#
 
-  # EC2 Keypair Creation
+  #----------EC2 Keypair Creation----------#
   Server1Keypair:
     Type: AWS::EC2::KeyPair
     Properties: 
@@ -181,6 +181,26 @@ Resources:
       Tags: 
         - Key: Name
           Value: !Sub '${AWS::StackName}-VPC-DR-Server1-Keypair'
+  
+  #----------Security Group Creation----------#
+  Server1SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: 'To allow access to server 1'
+      SecurityGroupIngress: 
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 202.186.93.238/32
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags: 
+        - Key: SecurityGroupName
+          Value: !Sub '${AWS::StackName}-VPC-DR-Server1-SG'
+      VpcId: !Ref VPC
+
 
   #----------EC2 Instance Creation----------#
   Server1Instance:
@@ -200,7 +220,7 @@ Resources:
       KeyName: !Ref Server1Keypair
       PropagateTagsToVolumeOnCreation: True
       SecurityGroupIds: 
-        - String
+        - !Ref Server1SG
       SubnetId: !Ref PrivateSubnetA
       Tags: 
         - Key: Name
