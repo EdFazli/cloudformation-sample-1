@@ -19,6 +19,9 @@ Parameters:
     Description: 'State your latest Server 1 snapshot ID'
     Type: String
     Default: ' '
+  Server1AMIID:
+    Description: 'State your AMI ID to be use for Server 1'
+    Type: String
 
 Resources:
 
@@ -234,7 +237,7 @@ Resources:
             VolumeType: 'gp3'
             VolumeSize: 16
       IamInstanceProfile: !Ref SSMInstanceRole
-      ImageId: String
+      ImageId: !Sub '${Server1AMIID'
       InstanceType: 't3.micro'
       KeyName: !Ref Server1Keypair
       PropagateTagsToVolumeOnCreation: True
