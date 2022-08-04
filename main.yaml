@@ -161,7 +161,26 @@ Resources:
       Description: 'IAM Role to be assume by DLM'
       ManagedPolicyArns: 
         - 'arn:aws:iam::aws:policy/service-role/AWSDataLifecycleManagerServiceRole'
-      RoleName: 'DRDLMRole'
+      RoleName: 'DR-DLM-Role'
+  SSMInstanceRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument: {
+          "Version": "2012-10-17",
+          "Statement": [
+              {
+                  "Effect": "Allow",
+                  "Principal": {
+                      "Service": "ec2.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+              }
+          ]
+      }
+      Description: 'IAM Role to be assume by EC2'
+      ManagedPolicyArns: 
+        - 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
+      RoleName: 'DR-EC2-SSM-Role'
 
   #----------S3 Bucket Creation----------#
   VPCFlowLogsBucket:
@@ -214,7 +233,7 @@ Resources:
             Encrypted: True
             VolumeType: 'gp3'
             VolumeSize: 16
-      IamInstanceProfile: String
+      IamInstanceProfile: !Ref SSMInstanceRole
       ImageId: String
       InstanceType: 't3.micro'
       KeyName: !Ref Server1Keypair
