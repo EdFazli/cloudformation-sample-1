@@ -16,12 +16,13 @@ Parameters:
     Type: String
     Default: '10.0.10.0/25'
   Server1SnapshotID:
-    Description: 'State your latest snapshot ID in SG Region'
+    Description: 'State your latest Server 1 snapshot ID'
     Type: String
     Default: ' '
 
 Resources:
-  # VPC DR Creation
+
+  #----------VPC DR Creation----------#
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -110,7 +111,9 @@ Resources:
       DestinationCidrBlock: '0.0.0.0/0'
       GatewayId: !Ref NatGateway
   
-  # EIP Creation
+  #----------Transit Gateway Creation----------#
+
+  #----------EIP Creation----------#
   NGWEIP:
     Type: 'AWS::EC2::EIP'
     Properties:
@@ -119,7 +122,7 @@ Resources:
       - Key: Name
         Value: !Sub '${AWS::StackName}-VPC-DR-NGW-EIP'
   
-  # VPC Flow Logs Creation
+  #----------VPC Flow Logs Creation----------#
   VPCFlowLogsToS3:
     Type: AWS::EC2::FlowLog
     DependsOn: !Ref VPCFlowLogsBucket
@@ -139,14 +142,35 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-VPC-DR-Flowlogs'
   
-  # S3 Bucket Creation
+  #----------IAM Role Creation----------#
+  DRDLMRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument: {
+          "Version": "2012-10-17",
+          "Statement": [
+              {
+                  "Effect": "Allow",
+                  "Principal": {
+                      "Service": "dlm.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+              }
+          ]
+      }
+      Description: 'IAM Role to be assume by DLM'
+      ManagedPolicyArns: 
+        - 'arn:aws:iam::aws:policy/service-role/AWSDataLifecycleManagerServiceRole'
+      RoleName: 'DRDLMRole'
+
+  #----------S3 Bucket Creation----------#
   VPCFlowLogsBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: 'vpc-dr-flowlogs'
       AccessControl: LogDeliveryWrite
   
-  # EBS Volume Creation
+  #----------EBS Volume Creation----------#
 
   # EC2 Keypair Creation
   Server1Keypair:
@@ -158,7 +182,7 @@ Resources:
         - Key: Name
           Value: !Sub '${AWS::StackName}-VPC-DR-Server1-Keypair'
 
-  # EC2 Instance Creation
+  #----------EC2 Instance Creation----------#
   Server1Instance:
     Type: AWS::EC2::Instance
     Properties: 
@@ -181,3 +205,26 @@ Resources:
       Tags: 
         - Key: Name
           Value: !Sub '${AWS::StackName}-VPC-DR-Server1'
+
+  #----------DLM Creation----------#
+  SnapshotRetention:
+    Type: AWS::DLM::LifecyclePolicy
+    Properties:
+      Description: 'DR snapshot retention period'
+      ExecutionRoleArn: !Ref DRDLMRole
+      PolicyDetails: 
+        PolicyType: EBS_SNAPSHOT_MANAGEMENT
+        ResourceTypes: 
+          - VOLUME
+        Schedules: 
+          - Name: !Sub '${AWS::StackName}-VPC-DR-Snapshot-Retention-Rule'
+            RetainRule:
+              Count: 2
+        TargetTags: 
+          - Key: DR-Snapshot
+            Value: 'True'
+      State: ENABLED
+      Tags: 
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-VPC-DR-Snapshot-Retention-Policy'
+      
